@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Supabase Configuration
     const SUPABASE_URL = 'https://vhptyvnutvdloekbtoef.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZocHR5dm51dHZkbG9la2J0b2VmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAwMzg1MjIsImV4cCI6MjA4NTYxNDUyMn0.ino0oJp0g705pD3W2Q36O-GGVgdXWTouoCxOw0OlC7Y';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const sajuForm = document.getElementById('saju-form');
     const inputSection = document.getElementById('input-section');
@@ -27,6 +27,11 @@ document.addEventListener('DOMContentLoaded', () => {
     sajuForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
+        const submitButton = sajuForm.querySelector('.cta-button');
+        const originalBtnText = submitButton.innerText;
+        submitButton.innerText = '운세를 분석 중입니다...';
+        submitButton.disabled = true;
+
         const name = document.getElementById('user-name').value;
         const gender = document.querySelector('input[name="gender"]:checked').value;
         const calendarType = document.querySelector('input[name="calendar"]:checked').value;
@@ -36,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Save data to Supabase
         try {
-            const { error } = await supabase
+            const { error } = await supabaseClient
                 .from('saju_requests')
                 .insert([
                     {
@@ -50,11 +55,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (error) {
                 console.error('Error saving to Supabase:', error);
-            } else {
-                console.log('Successfully saved to Supabase');
             }
         } catch (err) {
             console.error('Unexpected error:', err);
+        } finally {
+            submitButton.innerText = originalBtnText;
+            submitButton.disabled = false;
         }
 
         // Simplified Saju calculation based on birth date
